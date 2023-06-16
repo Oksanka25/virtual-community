@@ -1,17 +1,12 @@
-import Header from "@components/header/Header";
-import { useState } from "preact/hooks";
-import {} from "preact/hooks";
+import Feed from "@pages/feed";
+import { Route } from "wouter-preact";
 
 export function App() {
-  const [activeTopMenuItem, setActiveTopMenuItem] = useState("Blank");
-
-  const handleTopMenuItemClick = (menuItem: string) => {
-    setActiveTopMenuItem(menuItem);
-  };
-
   return (
     <>
-      <Header onTopMenuItemClick={handleTopMenuItemClick} />
+      <Route path="/">
+        <Feed />
+      </Route>
     </>
   );
 }

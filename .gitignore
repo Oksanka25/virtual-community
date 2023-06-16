@@ -13,6 +13,8 @@ dist-ssr
 build
 *.local
 
+**/test/**
+
 # Editor directories and files
 !.vscode/extensions.json
 .idea
@@ -38,3 +40,6 @@ typings/
 
 # dotenv environment variables file
 .env
+
+# test coverage
+**/coverage/**/*

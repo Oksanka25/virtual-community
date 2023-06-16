@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -10,12 +12,16 @@ import http from "http";
 
 import { type Context, decodeAuthHeader } from "./context.js";
 import {
+  disconnectDatabase,
+  initializeDatabase,
+  prisma,
+} from "./database/index.js";
+import {
   ServeClient,
   ServeClientStaticAssets,
 } from "./middlewares/client.middleware.js";
 import EnvInit from "./middlewares/env.middleware.js";
 import generalMiddleware from "./middlewares/general.middleware.js";
-import { initializeDatabase, prisma } from "./prisma/index.js";
 import { schema } from "./schema.js";
 import { GetApplicationMode } from "./utils/mode.util.js";
 
@@ -44,7 +50,6 @@ const apolloServer = new ApolloServer<Context>({
 
 await apolloServer.start();
 
-// serve client assets
 app.use(
   "/",
   cors<cors.CorsRequest>(),
@@ -67,6 +72,7 @@ app.use(
         //   throw new GraphQLError("User is not authenticated");
         // }
 
+        // ideally we do not want to return undefined because now in the resolvers we have to do an extra check
         return {
           user: user || undefined,
         };
@@ -85,16 +91,16 @@ app.use("/client", ServeClient);
 await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
 
 // eslint-disable-next-line no-console
-console.log(`🚀  Server ready at http://localhost:${port}`);
+console.log(`[server] 🚀  server ready at http://localhost:${port}/graphql`);
 
 // initialize database connection via prisma
 initializeDatabase()
   .then(async () => {
-    await prisma.$disconnect();
+    disconnectDatabase();
   })
   .catch(async (e) => {
     // eslint-disable-next-line no-console
     console.error(e);
-    await prisma.$disconnect();
+    disconnectDatabase();
     process.exit(1);
   });
